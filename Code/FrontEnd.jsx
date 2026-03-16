@@ -1,11 +1,4 @@
 import React, { useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Bot, Search, ShieldCheck, Zap, Filter, BrainCircuit, Database, Globe, MessageSquare, Cpu } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const services = [
   {
@@ -13,374 +6,838 @@ const services = [
     name: "RouteMind AI",
     category: "Logistics",
     provider: "MoveFlow",
-    description: "Optimizes moving routes, crew assignments, and scheduling windows for higher efficiency.",
+    description:
+      "Optimizes moving routes, crew assignments, and scheduling windows for higher efficiency.",
     pricing: "$149/mo",
     integrations: ["Google Maps", "Slack", "Zapier"],
-    accuracy: "92% route efficiency improvement",
+    spec: "92% route efficiency improvement",
     bestFor: "Local and regional movers",
-    icon: Globe,
   },
   {
     id: 2,
     name: "LeadLift GPT",
     category: "Sales",
     provider: "PipelineOS",
-    description: "Scores inbound moving leads, drafts follow-ups, and highlights the most likely conversions.",
+    description:
+      "Scores inbound moving leads, drafts follow-ups, and highlights the most likely conversions.",
     pricing: "$99/mo",
     integrations: ["HubSpot", "Gmail", "Salesforce"],
-    accuracy: "89% lead scoring confidence",
+    spec: "89% lead scoring confidence",
     bestFor: "Sales and intake teams",
-    icon: MessageSquare,
   },
   {
     id: 3,
     name: "ClaimGuard Vision",
     category: "Claims",
     provider: "InspectAI",
-    description: "Uses computer vision to flag damage in item photos and assist with claims documentation.",
+    description:
+      "Uses computer vision to flag damage in item photos and assist with claims documentation.",
     pricing: "$229/mo",
     integrations: ["Dropbox", "Google Drive", "REST API"],
-    accuracy: "95% image issue detection",
+    spec: "95% image issue detection",
     bestFor: "Claims and QA teams",
-    icon: ShieldCheck,
   },
   {
     id: 4,
     name: "OpsPilot",
     category: "Operations",
     provider: "StackMove",
-    description: "Monitors fleet, dispatch, and operational bottlenecks with AI-generated recommendations.",
+    description:
+      "Monitors fleet, dispatch, and operational bottlenecks with AI-generated recommendations.",
     pricing: "$179/mo",
     integrations: ["QuickBooks", "Tableau", "Slack"],
-    accuracy: "Real-time anomaly alerts",
+    spec: "Real-time anomaly alerts",
     bestFor: "Operations managers",
-    icon: Zap,
   },
   {
     id: 5,
     name: "DocParse AI",
     category: "Admin",
     provider: "PaperLess",
-    description: "Extracts and structures estimates, contracts, and customer forms into clean records.",
+    description:
+      "Extracts and structures estimates, contracts, and customer forms into clean records.",
     pricing: "$79/mo",
     integrations: ["Google Drive", "DocuSign", "Airtable"],
-    accuracy: "97% field extraction",
+    spec: "97% field extraction",
     bestFor: "Back office teams",
-    icon: Database,
   },
   {
     id: 6,
     name: "CrewCoach",
     category: "Training",
     provider: "SkillForge",
-    description: "AI assistant for onboarding, SOP retrieval, and training support for movers in the field.",
+    description:
+      "AI assistant for onboarding, SOP retrieval, and training support for movers in the field.",
     pricing: "$129/mo",
     integrations: ["Notion", "Teams", "Mobile App"],
-    accuracy: "24/7 SOP guidance",
+    spec: "24/7 SOP guidance",
     bestFor: "Field crews and trainers",
-    icon: Cpu,
   },
 ];
 
-const categories = ["All", "Logistics", "Sales", "Claims", "Operations", "Admin", "Training"];
+const categories = [
+  "All",
+  "Logistics",
+  "Sales",
+  "Claims",
+  "Operations",
+  "Admin",
+  "Training",
+];
 
-function Stat({ label, value }) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
-      <div className="text-2xl font-semibold text-white md:text-3xl">{value}</div>
-      <div className="mt-1 text-sm text-slate-300">{label}</div>
-    </div>
-  );
-}
-
-function ServiceCard({ service }) {
-  const Icon = service.icon;
-
-  return (
-    <motion.div layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
-      <Card className="h-full rounded-3xl border-slate-200/60 bg-white/90 shadow-xl shadow-slate-200/50">
-        <CardHeader className="space-y-4">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="rounded-2xl bg-slate-900 p-3 text-white">
-                <Icon className="h-5 w-5" />
-              </div>
-              <div>
-                <CardTitle className="text-xl text-slate-900">{service.name}</CardTitle>
-                <p className="text-sm text-slate-500">by {service.provider}</p>
-              </div>
-            </div>
-            <Badge className="rounded-full bg-slate-100 px-3 py-1 text-slate-700 hover:bg-slate-100">
-              {service.category}
-            </Badge>
-          </div>
-          <p className="text-sm leading-6 text-slate-600">{service.description}</p>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-2xl bg-slate-50 p-3">
-              <div className="text-xs font-medium uppercase tracking-wide text-slate-400">Pricing</div>
-              <div className="mt-1 font-semibold text-slate-800">{service.pricing}</div>
-            </div>
-            <div className="rounded-2xl bg-slate-50 p-3">
-              <div className="text-xs font-medium uppercase tracking-wide text-slate-400">Best For</div>
-              <div className="mt-1 font-semibold text-slate-800">{service.bestFor}</div>
-            </div>
-          </div>
-
-          <div className="rounded-2xl bg-slate-50 p-3">
-            <div className="text-xs font-medium uppercase tracking-wide text-slate-400">Spec Highlight</div>
-            <div className="mt-1 font-semibold text-slate-800">{service.accuracy}</div>
-          </div>
-
-          <div>
-            <div className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-400">Integrations</div>
-            <div className="flex flex-wrap gap-2">
-              {service.integrations.map((integration) => (
-                <Badge key={integration} variant="secondary" className="rounded-full px-3 py-1">
-                  {integration}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
-}
-
-export default function MovingTechAIFrontend() {
+export default function App() {
   const [entered, setEntered] = useState(false);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  React.useEffect(() => {
+    const onResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  const isMobile = windowWidth < 768;
 
   const filteredServices = useMemo(() => {
     return services.filter((service) => {
-      const matchesCategory = category === "All" || service.category === category;
-      const haystack = `${service.name} ${service.provider} ${service.description} ${service.bestFor} ${service.integrations.join(" ")}`.toLowerCase();
+      const matchesCategory =
+        category === "All" || service.category === category;
+      const haystack =
+        `${service.name} ${service.provider} ${service.description} ${service.bestFor} ${service.integrations.join(
+          " "
+        )}`.toLowerCase();
       const matchesSearch = haystack.includes(search.toLowerCase());
       return matchesCategory && matchesSearch;
     });
   }, [search, category]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <AnimatePresence mode="wait">
-        {!entered ? (
-          <motion.div
-            key="landing"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="relative overflow-hidden"
+    <div style={styles.app}>
+      {!entered ? (
+        <div style={styles.landing}>
+          <div style={styles.backgroundGlow1} />
+          <div style={styles.backgroundGlow2} />
+
+          <div
+            style={{
+              ...styles.heroWrap,
+              padding: isMobile ? "28px 18px" : "40px 32px",
+            }}
           >
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(59,130,246,0.22),_transparent_28%),radial-gradient(circle_at_top_left,_rgba(16,185,129,0.18),_transparent_24%),linear-gradient(to_bottom,_#020617,_#0f172a)]" />
-            <div className="absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:52px_52px]" />
-
-            <div className="relative mx-auto flex min-h-screen max-w-7xl flex-col px-6 py-8">
-              <header className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="rounded-2xl bg-white/10 p-3 backdrop-blur-md">
-                    <BrainCircuit className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-lg font-semibold tracking-tight">movingtech.ai</div>
-                    <div className="text-sm text-slate-400">AI tools for the moving industry</div>
-                  </div>
-                </div>
-                <Badge className="rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-slate-200 hover:bg-white/5">
-                  Curated marketplace
-                </Badge>
-              </header>
-
-              <main className="grid flex-1 items-center gap-12 py-16 md:grid-cols-2 md:py-24">
+            <div
+              style={{
+                ...styles.navRow,
+                flexDirection: isMobile ? "column" : "row",
+                alignItems: isMobile ? "flex-start" : "center",
+                gap: isMobile ? 12 : 16,
+              }}
+            >
+              <div style={styles.logoWrap}>
+                <div style={styles.logoIcon}>AI</div>
                 <div>
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-sm text-cyan-200"
-                  >
-                    <Bot className="h-4 w-4" />
-                    Discover smarter tools for modern movers
-                  </motion.div>
+                  <div style={styles.logoTitle}>movingtech.ai</div>
+                  <div style={styles.logoSubtitle}>
+                    AI tools for the moving industry
+                  </div>
+                </div>
+              </div>
 
-                  <motion.h1
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.15 }}
-                    className="mt-6 max-w-3xl text-5xl font-semibold leading-tight tracking-tight text-white md:text-7xl"
-                  >
-                    Find the best AI services built for moving companies.
-                  </motion.h1>
+              <div style={styles.marketplaceBadge}>Curated marketplace</div>
+            </div>
 
-                  <motion.p
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="mt-6 max-w-2xl text-lg leading-8 text-slate-300"
-                  >
-                    Browse AI tools for scheduling, sales, claims, operations, and back-office automation — all in one polished marketplace experience.
-                  </motion.p>
-
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.25 }}
-                    className="mt-8 flex flex-col gap-4 sm:flex-row"
-                  >
-                    <Button
-                      onClick={() => setEntered(true)}
-                      className="h-12 rounded-2xl bg-white px-6 text-base font-semibold text-slate-900 shadow-lg shadow-white/10 hover:bg-slate-100"
-                    >
-                      Explore Services
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="h-12 rounded-2xl border-white/15 bg-white/5 px-6 text-base text-white backdrop-blur-md hover:bg-white/10"
-                    >
-                      View Platform Overview
-                    </Button>
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="mt-10 grid gap-4 sm:grid-cols-3"
-                  >
-                    <Stat label="AI services listed" value="50+" />
-                    <Stat label="Categories covered" value="12" />
-                    <Stat label="Time saved" value="100s hrs" />
-                  </motion.div>
+            <div
+              style={{
+                ...styles.heroGrid,
+                gridTemplateColumns: isMobile ? "1fr" : "1.1fr 0.9fr",
+                gap: isMobile ? 28 : 36,
+                marginTop: isMobile ? 28 : 40,
+              }}
+            >
+              <div>
+                <div style={styles.smallHeroBadge}>
+                  Discover smarter tools for modern movers
                 </div>
 
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.96 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.2 }}
-                  className="relative"
+                <h1
+                  style={{
+                    ...styles.heroTitle,
+                    fontSize: isMobile ? "52px" : "84px",
+                    lineHeight: isMobile ? 0.95 : 0.92,
+                    marginTop: 18,
+                  }}
                 >
-                  <div className="absolute -inset-6 rounded-[2rem] bg-cyan-400/10 blur-3xl" />
-                  <div className="relative rounded-[2rem] border border-white/10 bg-white/5 p-4 shadow-2xl backdrop-blur-xl">
-                    <div className="rounded-[1.5rem] border border-white/10 bg-slate-900/80 p-4">
-                      <div className="mb-4 flex items-center justify-between">
+                  movingtech.ai
+                </h1>
+
+                <h2
+                  style={{
+                    ...styles.heroSubtitle,
+                    fontSize: isMobile ? "28px" : "42px",
+                    lineHeight: 1.1,
+                    marginTop: 18,
+                  }}
+                >
+                  Find the best AI services built for moving companies.
+                </h2>
+
+                <p
+                  style={{
+                    ...styles.heroDescription,
+                    fontSize: isMobile ? "18px" : "21px",
+                    maxWidth: "780px",
+                    marginTop: 18,
+                  }}
+                >
+                  Browse AI tools for scheduling, sales, claims, operations, and
+                  back-office automation — all in one polished marketplace
+                  experience.
+                </p>
+
+                <div style={{ ...styles.buttonRow, marginTop: 28 }}>
+                  <button
+                    style={styles.primaryButton}
+                    onClick={() => setEntered(true)}
+                  >
+                    Explore Services →
+                  </button>
+                </div>
+
+                <div
+                  style={{
+                    ...styles.statsRow,
+                    gridTemplateColumns: isMobile
+                      ? "1fr"
+                      : "repeat(3, minmax(0, 1fr))",
+                    marginTop: 32,
+                  }}
+                >
+                  <div style={styles.statCard}>
+                    <div style={styles.statNumber}>50+</div>
+                    <div style={styles.statLabel}>AI services listed</div>
+                  </div>
+                  <div style={styles.statCard}>
+                    <div style={styles.statNumber}>12</div>
+                    <div style={styles.statLabel}>Categories covered</div>
+                  </div>
+                  <div style={styles.statCard}>
+                    <div style={styles.statNumber}>100s</div>
+                    <div style={styles.statLabel}>Hours saved</div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={styles.previewShell}>
+                <div style={styles.previewCard}>
+                  <div style={styles.previewTop}>
+                    <div>
+                      <div style={styles.previewLabel}>Featured Workspace</div>
+                      <div style={styles.previewTitle}>AI Vendor Explorer</div>
+                    </div>
+                    <div style={styles.liveBadge}>Live</div>
+                  </div>
+
+                  {services.slice(0, 3).map((service) => (
+                    <div key={service.id} style={styles.previewItem}>
+                      <div style={styles.previewItemTop}>
                         <div>
-                          <div className="text-sm text-slate-400">Featured Workspace</div>
-                          <div className="text-xl font-semibold text-white">AI Vendor Explorer</div>
+                          <div style={styles.previewItemTitle}>
+                            {service.name}
+                          </div>
+                          <div style={styles.previewItemMeta}>
+                            {service.category}
+                          </div>
                         </div>
-                        <div className="rounded-full bg-emerald-400/15 px-3 py-1 text-sm text-emerald-300">Live</div>
+                        <div style={styles.previewPrice}>{service.pricing}</div>
                       </div>
-
-                      <div className="grid gap-4">
-                        {services.slice(0, 3).map((service) => {
-                          const Icon = service.icon;
-                          return (
-                            <div key={service.id} className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                              <div className="flex items-start justify-between gap-3">
-                                <div className="flex items-center gap-3">
-                                  <div className="rounded-xl bg-white/10 p-2">
-                                    <Icon className="h-4 w-4 text-white" />
-                                  </div>
-                                  <div>
-                                    <div className="font-medium text-white">{service.name}</div>
-                                    <div className="text-sm text-slate-400">{service.category}</div>
-                                  </div>
-                                </div>
-                                <div className="text-sm font-medium text-cyan-300">{service.pricing}</div>
-                              </div>
-                              <div className="mt-3 text-sm text-slate-300">{service.description}</div>
-                            </div>
-                          );
-                        })}
+                      <div style={styles.previewItemDesc}>
+                        {service.description}
                       </div>
                     </div>
-                  </div>
-                </motion.div>
-              </main>
-            </div>
-          </motion.div>
-        ) : (
-          <motion.div
-            key="main"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="min-h-screen bg-slate-100"
-          >
-            <div className="mx-auto max-w-7xl px-6 py-8">
-              <div className="mb-8 flex flex-col gap-4 rounded-[2rem] bg-slate-950 px-6 py-6 text-white shadow-2xl md:flex-row md:items-center md:justify-between">
-                <div>
-                  <div className="text-sm uppercase tracking-[0.2em] text-slate-400">movingtech.ai</div>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">AI services marketplace</h2>
-                  <p className="mt-2 text-slate-300">Search, compare, and filter AI solutions built for moving businesses.</p>
-                </div>
-                <div className="flex gap-3">
-                  <Button onClick={() => setEntered(false)} variant="secondary" className="rounded-2xl px-5 py-2.5">
-                    Back to Landing
-                  </Button>
-                </div>
-              </div>
-
-              <div className="mb-8 grid gap-4 lg:grid-cols-[1fr_220px]">
-                <div className="relative">
-                  <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                  <Input
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search services, providers, integrations, or use cases..."
-                    className="h-12 rounded-2xl border-slate-200 bg-white pl-11 text-base shadow-sm"
-                  />
-                </div>
-
-                <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger className="h-12 rounded-2xl border-slate-200 bg-white shadow-sm">
-                    <div className="flex items-center gap-2">
-                      <Filter className="h-4 w-4 text-slate-500" />
-                      <SelectValue placeholder="Filter by category" />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((item) => (
-                      <SelectItem key={item} value={item}>
-                        {item}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="mb-6 flex items-center justify-between">
-                <div>
-                  <h3 className="text-2xl font-semibold text-slate-900">Available services</h3>
-                  <p className="mt-1 text-slate-500">
-                    Showing <span className="font-semibold text-slate-800">{filteredServices.length}</span> result{filteredServices.length !== 1 ? "s" : ""}
-                  </p>
-                </div>
-              </div>
-
-              <motion.div layout className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                <AnimatePresence>
-                  {filteredServices.map((service) => (
-                    <ServiceCard key={service.id} service={service} />
                   ))}
-                </AnimatePresence>
-              </motion.div>
-
-              {filteredServices.length === 0 && (
-                <div className="rounded-[2rem] border border-dashed border-slate-300 bg-white p-12 text-center shadow-sm">
-                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
-                    <Search className="h-6 w-6 text-slate-500" />
-                  </div>
-                  <h4 className="mt-4 text-xl font-semibold text-slate-900">No services found</h4>
-                  <p className="mt-2 text-slate-500">Try adjusting your search or choosing a different category.</p>
                 </div>
-              )}
+              </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      ) : (
+        <div style={styles.mainPage}>
+          <div
+            style={{
+              ...styles.topBar,
+              flexDirection: isMobile ? "column" : "row",
+              alignItems: isMobile ? "flex-start" : "center",
+            }}
+          >
+            <div>
+              <div style={styles.smallLabel}>movingtech.ai</div>
+              <h2 style={styles.mainTitle}>AI services marketplace</h2>
+              <p style={styles.mainSubtitle}>
+                Search, compare, and filter AI solutions built for moving
+                businesses.
+              </p>
+            </div>
+
+            <button
+              style={styles.secondaryButton}
+              onClick={() => setEntered(false)}
+            >
+              Back to Landing
+            </button>
+          </div>
+
+          <div
+            style={{
+              ...styles.controls,
+              gridTemplateColumns: isMobile ? "1fr" : "1fr 220px",
+            }}
+          >
+            <input
+              style={styles.search}
+              placeholder="Search services, providers, integrations, or use cases..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+
+            <select
+              style={styles.select}
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            >
+              {categories.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div style={styles.resultsText}>
+            Showing <strong>{filteredServices.length}</strong> result
+            {filteredServices.length !== 1 ? "s" : ""}
+          </div>
+
+          <div
+            style={{
+              ...styles.grid,
+              gridTemplateColumns: isMobile
+                ? "1fr"
+                : "repeat(auto-fit, minmax(320px, 1fr))",
+            }}
+          >
+            {filteredServices.map((service) => (
+              <div key={service.id} style={styles.card}>
+                <div style={styles.cardTop}>
+                  <div>
+                    <h3 style={styles.cardTitle}>{service.name}</h3>
+                    <div style={styles.provider}>by {service.provider}</div>
+                  </div>
+                  <div style={styles.categoryTag}>{service.category}</div>
+                </div>
+
+                <p style={styles.cardDescription}>{service.description}</p>
+
+                <div style={styles.infoGrid}>
+                  <div style={styles.infoBox}>
+                    <div style={styles.infoLabel}>Pricing</div>
+                    <div style={styles.infoValue}>{service.pricing}</div>
+                  </div>
+                  <div style={styles.infoBox}>
+                    <div style={styles.infoLabel}>Best For</div>
+                    <div style={styles.infoValue}>{service.bestFor}</div>
+                  </div>
+                </div>
+
+                <div style={styles.fullInfoBox}>
+                  <div style={styles.infoLabel}>Spec Highlight</div>
+                  <div style={styles.infoValue}>{service.spec}</div>
+                </div>
+
+                <div>
+                  <div style={styles.infoLabel}>Integrations</div>
+                  <div style={styles.tags}>
+                    {service.integrations.map((integration) => (
+                      <span key={integration} style={styles.integrationTag}>
+                        {integration}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {filteredServices.length === 0 && (
+            <div style={styles.noResults}>
+              No services found. Try a different search or category.
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
+
+const styles = {
+  app: {
+    minHeight: "100vh",
+    fontFamily:
+      "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+  },
+
+  landing: {
+    minHeight: "100vh",
+    position: "relative",
+    overflow: "hidden",
+    background:
+      "radial-gradient(circle at top right, rgba(59,130,246,0.22), transparent 25%), radial-gradient(circle at top left, rgba(16,185,129,0.12), transparent 18%), linear-gradient(180deg, #020617 0%, #0f172a 100%)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: "32px 20px",
+    boxSizing: "border-box",
+  },
+
+  backgroundGlow1: {
+    position: "absolute",
+    width: "700px",
+    height: "700px",
+    borderRadius: "999px",
+    background: "rgba(37,99,235,0.18)",
+    filter: "blur(120px)",
+    top: "-160px",
+    right: "-180px",
+    pointerEvents: "none",
+  },
+
+  backgroundGlow2: {
+    position: "absolute",
+    width: "500px",
+    height: "500px",
+    borderRadius: "999px",
+    background: "rgba(16,185,129,0.1)",
+    filter: "blur(120px)",
+    bottom: "-120px",
+    left: "-120px",
+    pointerEvents: "none",
+  },
+
+  heroWrap: {
+    width: "100%",
+    maxWidth: "1380px",
+    position: "relative",
+    zIndex: 2,
+    background: "rgba(255,255,255,0.05)",
+    border: "1px solid rgba(255,255,255,0.1)",
+    borderRadius: "34px",
+    boxShadow: "0 30px 80px rgba(0,0,0,0.38)",
+    backdropFilter: "blur(12px)",
+  },
+
+  navRow: {
+    display: "flex",
+    justifyContent: "space-between",
+  },
+
+  logoWrap: {
+    display: "flex",
+    alignItems: "center",
+    gap: "14px",
+  },
+
+  logoIcon: {
+    width: "52px",
+    height: "52px",
+    borderRadius: "18px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "rgba(255,255,255,0.1)",
+    color: "white",
+    fontWeight: 800,
+    letterSpacing: "0.04em",
+  },
+
+  logoTitle: {
+    color: "white",
+    fontSize: "22px",
+    fontWeight: 700,
+    lineHeight: 1.1,
+  },
+
+  logoSubtitle: {
+    color: "#94a3b8",
+    fontSize: "14px",
+    marginTop: "4px",
+  },
+
+  marketplaceBadge: {
+    padding: "10px 16px",
+    borderRadius: "999px",
+    background: "rgba(255,255,255,0.06)",
+    border: "1px solid rgba(255,255,255,0.08)",
+    color: "#e2e8f0",
+    fontSize: "14px",
+  },
+
+  heroGrid: {
+    display: "grid",
+    alignItems: "center",
+  },
+
+  smallHeroBadge: {
+    display: "inline-block",
+    background: "rgba(56,189,248,0.12)",
+    color: "#bae6fd",
+    border: "1px solid rgba(56,189,248,0.14)",
+    padding: "10px 16px",
+    borderRadius: "999px",
+    fontSize: "14px",
+    fontWeight: 500,
+  },
+
+  heroTitle: {
+    color: "white",
+    margin: 0,
+    fontWeight: 800,
+    letterSpacing: "-0.04em",
+  },
+
+  heroSubtitle: {
+    color: "white",
+    margin: 0,
+    fontWeight: 700,
+    maxWidth: "800px",
+    letterSpacing: "-0.03em",
+  },
+
+  heroDescription: {
+    color: "#cbd5e1",
+    lineHeight: 1.7,
+    marginBottom: 0,
+  },
+
+  buttonRow: {
+    display: "flex",
+    gap: "14px",
+    flexWrap: "wrap",
+  },
+
+  primaryButton: {
+    background: "white",
+    color: "#0f172a",
+    border: "none",
+    borderRadius: "18px",
+    padding: "16px 24px",
+    fontSize: "17px",
+    fontWeight: 800,
+    cursor: "pointer",
+    boxShadow: "0 10px 30px rgba(255,255,255,0.08)",
+  },
+
+  statsRow: {
+    display: "grid",
+    gap: "16px",
+  },
+
+  statCard: {
+    background: "rgba(255,255,255,0.05)",
+    border: "1px solid rgba(255,255,255,0.08)",
+    borderRadius: "22px",
+    padding: "22px",
+  },
+
+  statNumber: {
+    fontSize: "38px",
+    fontWeight: 800,
+    color: "white",
+    marginBottom: "6px",
+  },
+
+  statLabel: {
+    color: "#cbd5e1",
+    fontSize: "15px",
+  },
+
+  previewShell: {
+    position: "relative",
+  },
+
+  previewCard: {
+    background: "rgba(2,6,23,0.7)",
+    border: "1px solid rgba(255,255,255,0.08)",
+    borderRadius: "28px",
+    padding: "22px",
+    boxShadow: "0 24px 60px rgba(0,0,0,0.3)",
+  },
+
+  previewTop: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "12px",
+    marginBottom: "18px",
+  },
+
+  previewLabel: {
+    color: "#94a3b8",
+    fontSize: "14px",
+    marginBottom: "6px",
+  },
+
+  previewTitle: {
+    color: "white",
+    fontSize: "24px",
+    fontWeight: 700,
+  },
+
+  liveBadge: {
+    background: "rgba(16,185,129,0.15)",
+    color: "#86efac",
+    borderRadius: "999px",
+    padding: "8px 12px",
+    fontSize: "14px",
+    fontWeight: 700,
+    whiteSpace: "nowrap",
+  },
+
+  previewItem: {
+    background: "rgba(255,255,255,0.05)",
+    border: "1px solid rgba(255,255,255,0.07)",
+    borderRadius: "20px",
+    padding: "16px",
+    marginBottom: "14px",
+  },
+
+  previewItemTop: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: "12px",
+    alignItems: "flex-start",
+    marginBottom: "10px",
+  },
+
+  previewItemTitle: {
+    color: "white",
+    fontSize: "17px",
+    fontWeight: 700,
+  },
+
+  previewItemMeta: {
+    color: "#94a3b8",
+    fontSize: "13px",
+    marginTop: "4px",
+  },
+
+  previewPrice: {
+    color: "#7dd3fc",
+    fontSize: "14px",
+    fontWeight: 700,
+    whiteSpace: "nowrap",
+  },
+
+  previewItemDesc: {
+    color: "#cbd5e1",
+    fontSize: "14px",
+    lineHeight: 1.6,
+  },
+
+  mainPage: {
+    minHeight: "100vh",
+    background: "#f8fafc",
+    padding: "32px 20px 50px",
+  },
+
+  topBar: {
+    maxWidth: "1200px",
+    margin: "0 auto 24px auto",
+    background: "#0f172a",
+    color: "white",
+    borderRadius: "28px",
+    padding: "28px",
+    display: "flex",
+    justifyContent: "space-between",
+    gap: "20px",
+    boxShadow: "0 20px 40px rgba(15,23,42,0.22)",
+  },
+
+  smallLabel: {
+    fontSize: "12px",
+    textTransform: "uppercase",
+    letterSpacing: "0.18em",
+    color: "#94a3b8",
+    marginBottom: "8px",
+  },
+
+  mainTitle: {
+    margin: "0 0 8px 0",
+    fontSize: "34px",
+    color: "white",
+  },
+
+  mainSubtitle: {
+    margin: 0,
+    color: "#cbd5e1",
+    fontSize: "16px",
+  },
+
+  secondaryButton: {
+    background: "#e2e8f0",
+    color: "#0f172a",
+    border: "none",
+    borderRadius: "14px",
+    padding: "12px 18px",
+    fontSize: "15px",
+    fontWeight: 700,
+    cursor: "pointer",
+    height: "fit-content",
+  },
+
+  controls: {
+    maxWidth: "1200px",
+    margin: "0 auto 18px auto",
+    display: "grid",
+    gap: "14px",
+  },
+
+  search: {
+    width: "100%",
+    padding: "15px 16px",
+    fontSize: "16px",
+    borderRadius: "16px",
+    border: "1px solid #cbd5e1",
+    outline: "none",
+    boxSizing: "border-box",
+    background: "white",
+  },
+
+  select: {
+    width: "100%",
+    padding: "15px 16px",
+    fontSize: "16px",
+    borderRadius: "16px",
+    border: "1px solid #cbd5e1",
+    outline: "none",
+    background: "white",
+  },
+
+  resultsText: {
+    maxWidth: "1200px",
+    margin: "0 auto 18px auto",
+    color: "#475569",
+    fontSize: "16px",
+  },
+
+  grid: {
+    maxWidth: "1200px",
+    margin: "0 auto",
+    display: "grid",
+    gap: "20px",
+  },
+
+  card: {
+    background: "white",
+    borderRadius: "24px",
+    padding: "22px",
+    boxShadow: "0 10px 30px rgba(15,23,42,0.08)",
+    border: "1px solid #e2e8f0",
+  },
+
+  cardTop: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: "12px",
+    alignItems: "flex-start",
+    marginBottom: "14px",
+  },
+
+  cardTitle: {
+    margin: "0 0 6px 0",
+    fontSize: "22px",
+    color: "#0f172a",
+  },
+
+  provider: {
+    color: "#64748b",
+    fontSize: "14px",
+  },
+
+  categoryTag: {
+    background: "#eef2ff",
+    color: "#3730a3",
+    padding: "8px 12px",
+    borderRadius: "999px",
+    fontSize: "13px",
+    fontWeight: 700,
+    whiteSpace: "nowrap",
+  },
+
+  cardDescription: {
+    color: "#475569",
+    lineHeight: 1.6,
+    fontSize: "15px",
+    marginBottom: "16px",
+  },
+
+  infoGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "12px",
+    marginBottom: "12px",
+  },
+
+  infoBox: {
+    background: "#f8fafc",
+    borderRadius: "16px",
+    padding: "14px",
+  },
+
+  fullInfoBox: {
+    background: "#f8fafc",
+    borderRadius: "16px",
+    padding: "14px",
+    marginBottom: "12px",
+  },
+
+  infoLabel: {
+    fontSize: "12px",
+    textTransform: "uppercase",
+    letterSpacing: "0.08em",
+    color: "#94a3b8",
+    marginBottom: "6px",
+    fontWeight: 700,
+  },
+
+  infoValue: {
+    color: "#0f172a",
+    fontWeight: 700,
+    fontSize: "15px",
+  },
+
+  tags: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "8px",
+    marginTop: "8px",
+  },
+
+  integrationTag: {
+    background: "#e2e8f0",
+    color: "#1e293b",
+    padding: "8px 12px",
+    borderRadius: "999px",
+    fontSize: "13px",
+    fontWeight: 600,
+  },
+
+  noResults: {
+    maxWidth: "1200px",
+    margin: "24px auto 0 auto",
+    background: "white",
+    border: "1px dashed #cbd5e1",
+    borderRadius: "24px",
+    padding: "28px",
+    textAlign: "center",
+    color: "#64748b",
+  },
+};
