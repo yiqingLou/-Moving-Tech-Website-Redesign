@@ -11,7 +11,7 @@ const INITIAL_FILTERS = {
   typology: '',
   best_for: '',
   install: '',
-  language: '',
+  language: [],      // now an array for multi-select
   status: '',
   lead_mgmt: null,
   dispatch: null,
@@ -21,6 +21,15 @@ const INITIAL_FILTERS = {
 };
 
 const PAGE_SIZE = 20;
+
+// Put verified profiles first; preserve server order within each group.
+function sortVerifiedFirst(items = []) {
+  return [...items].sort((a, b) => {
+    const aVerified = a.status?.toLowerCase() === 'verified' ? 0 : 1;
+    const bVerified = b.status?.toLowerCase() === 'verified' ? 0 : 1;
+    return aVerified - bVerified;
+  });
+}
 
 export default function DirectoryPage() {
   const [search, setSearch] = useState('');
@@ -49,15 +58,21 @@ export default function DirectoryPage() {
       if (debouncedSearch.trim()) {
         data = await searchSoftware(debouncedSearch.trim(), page, PAGE_SIZE);
       } else {
-        // Build filter payload — strip empty strings, convert bool features
+        // Build filter payload — strip empty/null values.
+        // language is sent as a comma-joined string when non-empty so the API
+        // receives a familiar format; adjust to match your backend if needed.
         const activeFilters = {};
         Object.entries(filters).forEach(([k, v]) => {
-          if (v !== null && v !== undefined && v !== '') {
+          if (Array.isArray(v)) {
+            if (v.length > 0) activeFilters[k] = v; // pass array as-is
+          } else if (v !== null && v !== undefined && v !== '') {
             activeFilters[k] = v;
           }
         });
         data = await filterSoftware(activeFilters, page, PAGE_SIZE);
       }
+      // Always surface verified profiles at the top of every page
+      data = { ...data, items: sortVerifiedFirst(data.items) };
       setResults(data);
     } catch (err) {
       setError(err.message);
@@ -88,7 +103,10 @@ export default function DirectoryPage() {
 
   const isFiltered =
     debouncedSearch.trim() ||
-    Object.values(filters).some((v) => v !== null && v !== undefined && v !== '');
+    Object.entries(filters).some(([, v]) => {
+      if (Array.isArray(v)) return v.length > 0;
+      return v !== null && v !== undefined && v !== '';
+    });
 
   return (
     <div className="directory">
