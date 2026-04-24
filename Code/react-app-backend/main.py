@@ -17,11 +17,11 @@ from firebase_admin import credentials, firestore
 
 creds_json = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
 if creds_json:
-    # Running on Render — credentials are in an env var
+    # Running on Render - credentials are in an env var
     creds_dict = json.loads(creds_json)
     cred = credentials.Certificate(creds_dict)
 else:
-    # Local dev — use the JSON file
+    # Local dev - use the JSON file
     cred = credentials.Certificate("serviceAccountKey.json")
 
 firebase_admin.initialize_app(cred)
