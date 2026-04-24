@@ -1,5 +1,5 @@
 """
-main.py  –  FastAPI backend for MovingTech.ai
+main.py  -  FastAPI backend for MovingTech.ai
 Reads from Firestore /companies collection and exposes the same REST API
 that the React frontend already expects.
 """
@@ -11,7 +11,7 @@ from typing import Optional, List
 import os
 
 # ── Firebase / Firestore ──────────────────────────────────────────────────────
-import json, tempfile
+import json
 import firebase_admin
 from firebase_admin import credentials, firestore
 
