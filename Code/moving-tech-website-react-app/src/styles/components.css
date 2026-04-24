@@ -1,5 +1,5 @@
 /* =============================================
-   components.css — Navbar, Cards, Filters, etc.
+   components.css - Navbar, Cards, Filters, etc.
    ============================================= */
 
 /* ---- Navbar ---- */
@@ -622,7 +622,7 @@
   user-select: none;
 }
 
-/* Hide the native checkbox — we render a custom track/thumb */
+/* Hide the native checkbox - we render a custom track/thumb */
 .filter-feature-toggle__checkbox {
   position: absolute;
   opacity: 0;

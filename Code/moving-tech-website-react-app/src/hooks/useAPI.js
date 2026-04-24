@@ -40,7 +40,7 @@ export function useApi(fetchFn, deps = []) {
 }
 
 /**
- * Debounce hook — useful for delaying search API calls while user types.
+ * Debounce hook - useful for delaying search API calls while user types.
  */
 export function useDebounce(value, delay = 350) {
   const [debounced, setDebounced] = useState(value);

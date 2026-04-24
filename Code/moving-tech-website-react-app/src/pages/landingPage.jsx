@@ -51,7 +51,7 @@ export default function LandingPage() {
 
             <p className="hero__lead">
               A neutral, structured directory of 150+ software tools built for
-              moving and relocation companies — from CRMs and dispatch systems to
+              moving and relocation companies - from CRMs and dispatch systems to
               international relocation platforms.
             </p>
 

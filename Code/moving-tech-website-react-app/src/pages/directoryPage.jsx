@@ -22,15 +22,6 @@ const INITIAL_FILTERS = {
 
 const PAGE_SIZE = 20;
 
-// Put verified profiles first; preserve server order within each group.
-function sortVerifiedFirst(items = []) {
-  return [...items].sort((a, b) => {
-    const aVerified = a.status?.toLowerCase() === 'verified' ? 0 : 1;
-    const bVerified = b.status?.toLowerCase() === 'verified' ? 0 : 1;
-    return aVerified - bVerified;
-  });
-}
-
 export default function DirectoryPage() {
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState(INITIAL_FILTERS);
@@ -58,9 +49,8 @@ export default function DirectoryPage() {
       if (debouncedSearch.trim()) {
         data = await searchSoftware(debouncedSearch.trim(), page, PAGE_SIZE);
       } else {
-        // Strip empty/null values before sending to the API.
-        // Arrays are passed as-is when non-empty; the backend can handle
-        // them however it prefers (repeated params, comma-joined, etc.).
+        // Strip empty/null values; arrays are passed as-is and serialised
+        // as repeated params (?key=a&key=b) inside filterSoftware.
         const activeFilters = {};
         Object.entries(filters).forEach(([k, v]) => {
           if (Array.isArray(v)) {
@@ -71,8 +61,6 @@ export default function DirectoryPage() {
         });
         data = await filterSoftware(activeFilters, page, PAGE_SIZE);
       }
-      // Always surface verified profiles at the top of every page
-      data = { ...data, items: sortVerifiedFirst(data.items) };
       setResults(data);
     } catch (err) {
       setError(err.message);

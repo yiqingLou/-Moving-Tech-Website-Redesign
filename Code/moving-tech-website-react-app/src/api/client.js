@@ -20,20 +20,24 @@ async function request(path) {
  * Maps to GET /api/software/search
  */
 export async function searchSoftware(q, page = 1, pageSize = 20) {
-  const params = new URLSearchParams({ q, page, pageSize });
+  const params = new URLSearchParams({ q, page, pageSize, sort_by: 'verified_first' });
   return request(`/api/software/search?${params}`);
 }
 
 /**
  * Structured filter query.
  * Maps to GET /api/software/filter
- * @param {Object} filters - Keys match backend query params
+ * @param {Object} filters - Keys match backend query params.
+ *   Array values are appended as repeated params (?key=a&key=b)
+ *   so FastAPI can receive them as List[str].
  */
 export async function filterSoftware(filters = {}, page = 1, pageSize = 20) {
-  const params = new URLSearchParams({ page, pageSize });
+  const params = new URLSearchParams({ page, pageSize, sort_by: 'verified_first' });
   Object.entries(filters).forEach(([key, val]) => {
-    // Skip empty/null/undefined values
-    if (val !== null && val !== undefined && val !== '') {
+    if (Array.isArray(val)) {
+      // Repeated params: ?typology=Full+TMS&typology=CRM
+      val.forEach((v) => params.append(key, v));
+    } else if (val !== null && val !== undefined && val !== '') {
       params.append(key, val);
     }
   });

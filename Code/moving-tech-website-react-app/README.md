@@ -1,6 +1,6 @@
-# MovingTech.ai — Frontend
+# MovingTech.ai - Frontend
 
-React application for browsing, searching, and filtering a directory of moving and relocation software. The frontend is intentionally decoupled from the data source — all external communication is routed through a thin API client (`src/api/client.js`) so the backend can be swapped or extended without touching any component code.
+React application for browsing, searching, and filtering a directory of moving and relocation software. The frontend is intentionally decoupled from the data source - all external communication is routed through a thin API client (`src/api/client.js`) so the backend can be swapped or extended without touching any component code.
 
 
 
@@ -19,7 +19,7 @@ npm install
 npm start
 ```
 
-React dev server starts on `http://localhost:3000`. API calls are proxied to `http://localhost:8000` via the `proxy` field in `package.json` — no environment variables are needed for local development.
+React dev server starts on `http://localhost:3000`. API calls are proxied to `http://localhost:8000` via the `proxy` field in `package.json` - no environment variables are needed for local development.
 
 ### Configuring the API URL
 
@@ -42,11 +42,11 @@ Defined in `App.js` using React Router v6:
 | `/` | `LandingPage` | Marketing hero, preview cards, value propositions |
 | `/directory` | `DirectoryPage` | Full searchable and filterable software listing |
 | `/software/:id` | `SoftwareDetailPage` | Individual profile page for one software product |
-| `/compare` | `ComparePage` | *(stub)* Side-by-side comparison — not yet implemented |
+| `/compare` | `ComparePage` | *(stub)* Side-by-side comparison - not yet implemented |
 
 The `Navbar` component sits outside the `<Routes>` block so it renders on every page.
 
-### Navigation state — zero extra requests
+### Navigation state - zero extra requests
 
 When a user clicks a `SoftwareCard`, the full item object is passed through React Router's `location.state`:
 
@@ -67,7 +67,7 @@ const [loading, setLoading] = useState(!location.state?.item);
 
 ## How the Frontend Communicates with the Backend
 
-### API client — `src/api/client.js`
+### API client - `src/api/client.js`
 
 Single source of truth for all network calls. Components never call `fetch()` directly.
 
@@ -97,11 +97,11 @@ Component updates state
 | `getFilterOptions()` | `GET /api/software/options` | `DirectoryPage` (on mount, populates sidebar dropdowns) |
 | `getSoftwareById(id)` | `GET /api/software/{id}` | `SoftwareDetailPage` (direct URL access only) |
 
-### Data-fetching hook — `src/hooks/useAPI.js`
+### Data-fetching hook - `src/hooks/useAPI.js`
 
 `useApi(fetchFn, deps)` is a generic hook that wraps any async function and manages `loading`, `error`, and `data` state with a mounted-ref guard to prevent state updates on unmounted components.
 
-`DirectoryPage` does not use `useApi` directly — it manages its own state because the fetch function depends on multiple pieces of state (search query, filters, page) that change independently and need coordinated resets. Simpler pages like `SoftwareDetailPage` use the pattern inline.
+`DirectoryPage` does not use `useApi` directly - it manages its own state because the fetch function depends on multiple pieces of state (search query, filters, page) that change independently and need coordinated resets. Simpler pages like `SoftwareDetailPage` use the pattern inline.
 
 `useDebounce(value, delay)` delays propagating the search input value by 350 ms so the API is not called on every keystroke.
 
@@ -111,11 +111,11 @@ Component updates state
 
 ### Search and filter are mutually exclusive
 
-When the search box contains text, the filter sidebar is bypassed entirely and `searchSoftware()` is called. When the search box is empty, `filterSoftware()` runs with whatever sidebar filters are active. This mirrors the mental model most users have — you either know what you're looking for (search) or you're browsing (filter). Mixing both would require more complex backend query logic and is deferred to a future phase.
+When the search box contains text, the filter sidebar is bypassed entirely and `searchSoftware()` is called. When the search box is empty, `filterSoftware()` runs with whatever sidebar filters are active. This mirrors the mental model most users have - you either know what you're looking for (search) or you're browsing (filter). Mixing both would require more complex backend query logic and is deferred to a future phase.
 
 ### Boolean feature filters cycle through three states
 
-The feature toggles in the sidebar cycle: **Any → Yes → No → Any**. `null` means no preference, `true` means must have the feature, `false` means must not have it. This lets a user explicitly exclude software that lacks dispatch, for example — something a simple checkbox cannot express.
+The feature toggles in the sidebar cycle: **Any → Yes → No → Any**. `null` means no preference, `true` means must have the feature, `false` means must not have it. This lets a user explicitly exclude software that lacks dispatch, for example - something a simple checkbox cannot express.
 
 ```js
 // filterPanel.jsx
@@ -148,7 +148,7 @@ Clickable card shown in the directory grid. Derives its feature badge list by fi
 
 ### `<FilterPanel options={} filters={} onChange={} onReset={} />`
 
-Controlled component — owns no local state. Receives the current filter object, calls `onChange` with a full updated copy on every interaction. Dropdown options are populated from the `options` prop which comes from `GET /api/software/options`, so they always reflect what is actually in the database.
+Controlled component - owns no local state. Receives the current filter object, calls `onChange` with a full updated copy on every interaction. Dropdown options are populated from the `options` prop which comes from `GET /api/software/options`, so they always reflect what is actually in the database.
 
 ### `<FeatureBadge label={} size="sm|md" />`
 
@@ -156,7 +156,7 @@ Renders a single pill. Used in `SoftwareCard` (size `sm`) and on the detail page
 
 ### `<Pagination page={} pageSize={} total={} onChange={} />`
 
-Renders nothing when `totalPages <= 1`. Page numbers are windowed around the current page with a delta of 2, and ellipsis markers are inserted for gaps. The component is purely presentational — it calls `onChange(newPage)` and the parent owns the page state.
+Renders nothing when `totalPages <= 1`. Page numbers are windowed around the current page with a delta of 2, and ellipsis markers are inserted for gaps. The component is purely presentational - it calls `onChange(newPage)` and the parent owns the page state.
 
 ### `<Navbar />`
 
@@ -198,7 +198,7 @@ Then import and call it from any page or hook.
 2. Selected item IDs are held in a top-level state (or React context) passed down from `App.js`.
 3. `ComparePage` reads those IDs, fetches full profiles via `getSoftwareById()` for any not already in state, and renders a side-by-side feature matrix.
 
-The feature matrix structure is already defined in `softwareDetailPage.jsx` (`FEATURE_SECTIONS`) — reuse it as the row definition for the comparison table.
+The feature matrix structure is already defined in `softwareDetailPage.jsx` (`FEATURE_SECTIONS`) - reuse it as the row definition for the comparison table.
 
 ### Environment variables
 
