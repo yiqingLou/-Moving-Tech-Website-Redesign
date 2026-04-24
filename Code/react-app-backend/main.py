@@ -2,27 +2,28 @@
 main.py  –  FastAPI backend for MovingTech.ai
 Reads from Firestore /companies collection and exposes the same REST API
 that the React frontend already expects.
-
-
-Run with:           uvicorn main:app --reload --port 8000
 """
 
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+
 from typing import Optional, List
 import os
 
 # ── Firebase / Firestore ──────────────────────────────────────────────────────
+import json, tempfile
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-# Path to your service-account JSON key (set via env var or hard-code for local dev)
-SERVICE_ACCOUNT_PATH = os.getenv(
-    "GOOGLE_APPLICATION_CREDENTIALS",
-    "serviceAccountKey.json",          # default: sits next to main.py
-)
+creds_json = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+if creds_json:
+    # Running on Render — credentials are in an env var
+    creds_dict = json.loads(creds_json)
+    cred = credentials.Certificate(creds_dict)
+else:
+    # Local dev — use the JSON file
+    cred = credentials.Certificate("serviceAccountKey.json")
 
-cred = credentials.Certificate(SERVICE_ACCOUNT_PATH)
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
