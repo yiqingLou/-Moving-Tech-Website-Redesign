@@ -50,13 +50,12 @@ export default function SoftwareDetailPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Prefer item passed via navigation state; fall back to API fetch
   const [item, setItem] = useState(location.state?.item || null);
   const [loading, setLoading] = useState(!location.state?.item);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (item) return; // already have it from router state
+    if (item) return;
     setLoading(true);
     getSoftwareById(id)
       .then((found) => {
@@ -113,25 +112,28 @@ export default function SoftwareDetailPage() {
           </div>
         </div>
       </header>
-      {/* Overview card */}
-      <section className="detail-section">
-        <h2 className="detail-section__title">Overview</h2>
-        <div className="detail-overview-grid">
-          {[
-            { label: 'Best For', value: item.best_for },
-            { label: 'Deployment', value: item.install },
-            { label: 'Language', value: item.language },
-          ]
-            .filter(({ value }) => value)
-            .map(({ label, value }) => (
-              <div key={label} className="detail-overview-item">
-                <div className="detail-overview-item__label">{label}</div>
-                <div className="detail-overview-item__value">{value}</div>
-              </div>
-            ))}
-        </div>
-      </section>
+
+      {/* Body — everything here is constrained to max-width: 1000px and centered */}
       <div className="detail-body">
+        {/* Overview */}
+        <section className="detail-section">
+          <h2 className="detail-section__title">Overview</h2>
+          <div className="detail-overview-grid">
+            {[
+              { label: 'Best For', value: item.best_for },
+              { label: 'Deployment', value: item.install },
+              { label: 'Language', value: item.language },
+            ]
+              .filter(({ value }) => value)
+              .map(({ label, value }) => (
+                <div key={label} className="detail-overview-item">
+                  <div className="detail-overview-item__label">{label}</div>
+                  <div className="detail-overview-item__value">{value}</div>
+                </div>
+              ))}
+          </div>
+        </section>
+
         {/* Feature matrix */}
         {item.features && (
           <section className="detail-section">
@@ -153,6 +155,7 @@ export default function SoftwareDetailPage() {
             </div>
           </section>
         )}
+
         {/* Keywords */}
         {item.keywords && (
           <section className="detail-section">
