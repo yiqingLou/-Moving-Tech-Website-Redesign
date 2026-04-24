@@ -8,11 +8,11 @@ import { useDebounce } from '../hooks/useAPI';
 import '../styles/global.css';
 
 const INITIAL_FILTERS = {
-  typology: '',
-  best_for: '',
-  install: '',
-  language: [],      // now an array for multi-select
-  status: '',
+  typology: [],      // multi-select
+  best_for: [],      // multi-select
+  install: [],       // multi-select
+  language: [],      // multi-select
+  status: [],        // multi-select
   lead_mgmt: null,
   dispatch: null,
   crew_app: null,
@@ -58,13 +58,13 @@ export default function DirectoryPage() {
       if (debouncedSearch.trim()) {
         data = await searchSoftware(debouncedSearch.trim(), page, PAGE_SIZE);
       } else {
-        // Build filter payload — strip empty/null values.
-        // language is sent as a comma-joined string when non-empty so the API
-        // receives a familiar format; adjust to match your backend if needed.
+        // Strip empty/null values before sending to the API.
+        // Arrays are passed as-is when non-empty; the backend can handle
+        // them however it prefers (repeated params, comma-joined, etc.).
         const activeFilters = {};
         Object.entries(filters).forEach(([k, v]) => {
           if (Array.isArray(v)) {
-            if (v.length > 0) activeFilters[k] = v; // pass array as-is
+            if (v.length > 0) activeFilters[k] = v;
           } else if (v !== null && v !== undefined && v !== '') {
             activeFilters[k] = v;
           }

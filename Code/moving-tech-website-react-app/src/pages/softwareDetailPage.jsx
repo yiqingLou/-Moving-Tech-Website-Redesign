@@ -115,25 +115,6 @@ export default function SoftwareDetailPage() {
       </header>
 
       <div className="detail-body">
-        {/* Overview card */}
-        <section className="detail-section">
-          <h2 className="detail-section__title">Overview</h2>
-          <div className="detail-overview-grid">
-            {[
-              { label: 'Best For', value: item.best_for },
-              { label: 'Deployment', value: item.install },
-              { label: 'Language', value: item.language },
-            ]
-              .filter(({ value }) => value)
-              .map(({ label, value }) => (
-                <div key={label} className="detail-overview-item">
-                  <div className="detail-overview-item__label">{label}</div>
-                  <div className="detail-overview-item__value">{value}</div>
-                </div>
-              ))}
-          </div>
-        </section>
-
         {/* Feature matrix */}
         {item.features && (
           <section className="detail-section">

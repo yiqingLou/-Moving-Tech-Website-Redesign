@@ -18,23 +18,36 @@ const FEATURE_KEYS = [
   { key: 'surveying', label: 'Surveying' },
 ];
 
-// ─── Language multi-select ────────────────────────────────────────────────────
+// ─── Generic multi-select ─────────────────────────────────────────────────────
 
-function LanguageMultiSelect({ dbOptions = [], selected = [], onChange }) {
+/**
+ * MultiSelect — a reusable searchable checkbox dropdown.
+ *
+ * Props:
+ *   options      string[]   — the list of options to show
+ *   selected     string[]   — currently selected values
+ *   onChange     fn         — called with the new selected array
+ *   placeholder  string     — trigger label when nothing is selected
+ *   searchable   bool       — show the search input (default true)
+ *   dotOptions   string[]   — optional subset that gets a colored dot (used for languages)
+ */
+function MultiSelect({
+  options = [],
+  selected = [],
+  onChange,
+  placeholder = 'All',
+  searchable = true,
+  dotOptions = [],
+}) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const containerRef = useRef(null);
 
-  // Merge DB options with the common list, deduplicated, sorted
-  const allLanguages = Array.from(
-    new Set([...COMMON_LANGUAGES, ...dbOptions])
-  ).sort((a, b) => a.localeCompare(b));
-
-  const filtered = allLanguages.filter((lang) =>
-    lang.toLowerCase().includes(search.toLowerCase())
+  const filtered = options.filter((opt) =>
+    opt.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Close when clicking outside
+  // Close on outside click
   useEffect(() => {
     const handler = (e) => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
@@ -46,16 +59,16 @@ function LanguageMultiSelect({ dbOptions = [], selected = [], onChange }) {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const toggle = (lang) => {
-    const next = selected.includes(lang)
-      ? selected.filter((l) => l !== lang)
-      : [...selected, lang];
+  const toggle = (opt) => {
+    const next = selected.includes(opt)
+      ? selected.filter((s) => s !== opt)
+      : [...selected, opt];
     onChange(next);
   };
 
-  const removeTag = (lang, e) => {
+  const removeTag = (opt, e) => {
     e.stopPropagation();
-    onChange(selected.filter((l) => l !== lang));
+    onChange(selected.filter((s) => s !== opt));
   };
 
   return (
@@ -69,16 +82,16 @@ function LanguageMultiSelect({ dbOptions = [], selected = [], onChange }) {
         onKeyDown={(e) => e.key === 'Enter' && setOpen((o) => !o)}
       >
         {selected.length === 0 ? (
-          <span className="lang-select__placeholder">All languages</span>
+          <span className="lang-select__placeholder">{placeholder}</span>
         ) : (
           <div className="lang-select__tags">
-            {selected.map((lang) => (
-              <span key={lang} className="lang-select__tag">
-                {lang}
+            {selected.map((opt) => (
+              <span key={opt} className="lang-select__tag">
+                {opt}
                 <button
                   className="lang-select__tag-remove"
-                  onClick={(e) => removeTag(lang, e)}
-                  aria-label={`Remove ${lang}`}
+                  onClick={(e) => removeTag(opt, e)}
+                  aria-label={`Remove ${opt}`}
                 >
                   ×
                 </button>
@@ -92,33 +105,35 @@ function LanguageMultiSelect({ dbOptions = [], selected = [], onChange }) {
       {/* Dropdown */}
       {open && (
         <div className="lang-select__dropdown">
-          <div className="lang-select__search-wrap">
-            <input
-              className="lang-select__search"
-              type="text"
-              placeholder="Search languages…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              autoFocus
-            />
-          </div>
+          {searchable && (
+            <div className="lang-select__search-wrap">
+              <input
+                className="lang-select__search"
+                type="text"
+                placeholder="Search…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                autoFocus
+              />
+            </div>
+          )}
           <ul className="lang-select__list">
             {filtered.length === 0 && (
               <li className="lang-select__empty">No matches</li>
             )}
-            {filtered.map((lang) => {
-              const checked = selected.includes(lang);
+            {filtered.map((opt) => {
+              const checked = selected.includes(opt);
               return (
-                <li key={lang} className="lang-select__item">
+                <li key={opt} className="lang-select__item">
                   <label className="lang-select__item-label">
                     <input
                       type="checkbox"
                       className="lang-select__checkbox"
                       checked={checked}
-                      onChange={() => toggle(lang)}
+                      onChange={() => toggle(opt)}
                     />
-                    {lang}
-                    {dbOptions.includes(lang) && (
+                    {opt}
+                    {dotOptions.includes(opt) && (
                       <span className="lang-select__dot" title="Available in directory" />
                     )}
                   </label>
@@ -163,6 +178,11 @@ export default function FilterPanel({ options, filters, onChange, onReset }) {
       return v !== null && v !== undefined && v !== '';
     });
 
+  // Build the language options list: merge common list with DB options, dedupe, sort
+  const languageOptions = Array.from(
+    new Set([...COMMON_LANGUAGES, ...(options?.language ?? [])])
+  ).sort((a, b) => a.localeCompare(b));
+
   return (
     <aside className="filter-panel">
       <div className="filter-panel__header">
@@ -174,77 +194,68 @@ export default function FilterPanel({ options, filters, onChange, onReset }) {
         )}
       </div>
 
-      {/* Typology */}
+      {/* Software Type */}
       <div className="filter-group">
         <label className="filter-group__label">Software Type</label>
-        <select
-          className="filter-group__select"
-          value={filters.typology || ''}
-          onChange={(e) => handleChange('typology', e.target.value)}
-        >
-          <option value="">All types</option>
-          {options?.typology?.map((opt) => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
+        <MultiSelect
+          options={options?.typology ?? []}
+          selected={filters.typology ?? []}
+          onChange={(vals) => handleChange('typology', vals)}
+          placeholder="All types"
+          searchable={false}
+        />
       </div>
 
       {/* Best For */}
       <div className="filter-group">
         <label className="filter-group__label">Best For</label>
-        <select
-          className="filter-group__select"
-          value={filters.best_for || ''}
-          onChange={(e) => handleChange('best_for', e.target.value)}
-        >
-          <option value="">All markets</option>
-          {options?.best_for?.map((opt) => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
+        <MultiSelect
+          options={options?.best_for ?? []}
+          selected={filters.best_for ?? []}
+          onChange={(vals) => handleChange('best_for', vals)}
+          placeholder="All markets"
+          searchable={false}
+        />
       </div>
 
       {/* Deployment */}
       <div className="filter-group">
         <label className="filter-group__label">Deployment</label>
-        <select
-          className="filter-group__select"
-          value={filters.install || ''}
-          onChange={(e) => handleChange('install', e.target.value)}
-        >
-          <option value="">All types</option>
-          {options?.install?.map((opt) => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
+        <MultiSelect
+          options={options?.install ?? []}
+          selected={filters.install ?? []}
+          onChange={(vals) => handleChange('install', vals)}
+          placeholder="All types"
+          searchable={false}
+        />
       </div>
 
-      {/* Language — searchable multi-select */}
+      {/* Language — searchable, with DB-availability dots */}
       <div className="filter-group">
         <label className="filter-group__label">Language</label>
-        <LanguageMultiSelect
-          dbOptions={options?.language ?? []}
+        <MultiSelect
+          options={languageOptions}
           selected={filters.language ?? []}
-          onChange={(langs) => handleChange('language', langs)}
+          onChange={(vals) => handleChange('language', vals)}
+          placeholder="All languages"
+          searchable={true}
+          dotOptions={options?.language ?? []}
         />
       </div>
 
       {/* Status */}
       <div className="filter-group">
         <label className="filter-group__label">Status</label>
-        <select
-          className="filter-group__select"
-          value={filters.status || ''}
-          onChange={(e) => handleChange('status', e.target.value)}
-        >
-          <option value="">All statuses</option>
-          {options?.status?.map((opt) => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
+        <MultiSelect
+          options={options?.status ?? []}
+          selected={filters.status ?? []}
+          onChange={(vals) => handleChange('status', vals)}
+          placeholder="All statuses"
+          searchable={false}
+        />
       </div>
 
-      {/* Feature toggles — binary on/off checkboxes */}
+      {/* Feature toggles — binary on/off */}
       <div className="filter-group">
         <label className="filter-group__label">Features</label>
         <div className="filter-features">
