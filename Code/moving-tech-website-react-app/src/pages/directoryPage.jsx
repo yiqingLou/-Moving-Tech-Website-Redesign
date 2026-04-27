@@ -8,11 +8,11 @@ import { useDebounce } from '../hooks/useAPI';
 import '../styles/global.css';
 
 const INITIAL_FILTERS = {
-  typology: [],      // multi-select
-  best_for: [],      // multi-select
-  install: [],       // multi-select
-  language: [],      // multi-select
-  status: [],        // multi-select
+  typology: [],
+  best_for: [],
+  install: [],
+  language: [],
+  status: [],
   lead_mgmt: null,
   dispatch: null,
   crew_app: null,
@@ -22,14 +22,51 @@ const INITIAL_FILTERS = {
 
 const PAGE_SIZE = 20;
 
+const SORT_OPTIONS = [
+  { value: 'verified_first',   label: 'Verified first' },
+  { value: 'unverified_first', label: 'Unverified first' },
+  { value: 'name_asc',         label: 'Name A → Z' },
+  { value: 'name_desc',        label: 'Name Z → A' },
+];
+
+// ── Client-side sort ────────────────────────────────────────────────────────
+
+function sortItems(items, sortBy) {
+  if (!items) return items;
+  const sorted = [...items];
+  switch (sortBy) {
+    case 'verified_first':
+      return sorted.sort((a, b) => {
+        const av = (a.status || '').toLowerCase() === 'verified' ? 0 : 1;
+        const bv = (b.status || '').toLowerCase() === 'verified' ? 0 : 1;
+        return av - bv || (a.name || '').localeCompare(b.name || '');
+      });
+    case 'unverified_first':
+      return sorted.sort((a, b) => {
+        const av = (a.status || '').toLowerCase() === 'verified' ? 1 : 0;
+        const bv = (b.status || '').toLowerCase() === 'verified' ? 1 : 0;
+        return av - bv || (a.name || '').localeCompare(b.name || '');
+      });
+    case 'name_asc':
+      return sorted.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    case 'name_desc':
+      return sorted.sort((a, b) => (b.name || '').localeCompare(a.name || ''));
+    default:
+      return sorted;
+  }
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+
 export default function DirectoryPage() {
-  const [search, setSearch] = useState('');
+  const [search, setSearch]   = useState('');
   const [filters, setFilters] = useState(INITIAL_FILTERS);
-  const [page, setPage] = useState(1);
+  const [sortBy, setSortBy]   = useState('verified_first');
+  const [page, setPage]       = useState(1);
   const [results, setResults] = useState(null);
   const [options, setOptions] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError]     = useState(null);
 
   const debouncedSearch = useDebounce(search, 350);
 
@@ -37,7 +74,7 @@ export default function DirectoryPage() {
   useEffect(() => {
     getFilterOptions()
       .then(setOptions)
-      .catch(() => {/* non-fatal: filters just won't populate */});
+      .catch(() => {});
   }, []);
 
   // Fetch results whenever search query, filters, or page changes
@@ -49,8 +86,6 @@ export default function DirectoryPage() {
       if (debouncedSearch.trim()) {
         data = await searchSoftware(debouncedSearch.trim(), page, PAGE_SIZE);
       } else {
-        // Strip empty/null values; arrays are passed as-is and serialised
-        // as repeated params (?key=a&key=b) inside filterSoftware.
         const activeFilters = {};
         Object.entries(filters).forEach(([k, v]) => {
           if (Array.isArray(v)) {
@@ -69,25 +104,13 @@ export default function DirectoryPage() {
     }
   }, [debouncedSearch, filters, page]);
 
-  useEffect(() => {
-    fetchResults();
-  }, [fetchResults]);
+  useEffect(() => { fetchResults(); }, [fetchResults]);
 
-  // Reset to page 1 when query or filters change
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch, filters]);
+  // Reset to page 1 on query / filter change
+  useEffect(() => { setPage(1); }, [debouncedSearch, filters]);
 
-  const handleFilterChange = (newFilters) => {
-    setFilters(newFilters);
-    setPage(1);
-  };
-
-  const handleReset = () => {
-    setFilters(INITIAL_FILTERS);
-    setSearch('');
-    setPage(1);
-  };
+  const handleFilterChange = (newFilters) => { setFilters(newFilters); setPage(1); };
+  const handleReset = () => { setFilters(INITIAL_FILTERS); setSearch(''); setPage(1); };
 
   const isFiltered =
     debouncedSearch.trim() ||
@@ -95,6 +118,9 @@ export default function DirectoryPage() {
       if (Array.isArray(v)) return v.length > 0;
       return v !== null && v !== undefined && v !== '';
     });
+
+  // Apply client-side sort to the current page of results
+  const displayItems = results ? sortItems(results.items, sortBy) : [];
 
   return (
     <div className="directory">
@@ -131,9 +157,7 @@ export default function DirectoryPage() {
               autoComplete="off"
             />
             {search && (
-              <button className="search-field__clear" onClick={() => setSearch('')}>
-                ✕
-              </button>
+              <button className="search-field__clear" onClick={() => setSearch('')}>✕</button>
             )}
           </div>
         </div>
@@ -171,17 +195,36 @@ export default function DirectoryPage() {
 
             {!loading && !error && results && results.items.length > 0 && (
               <>
-                <div className="results-summary">
-                  Showing{' '}
-                  <strong>
-                    {(page - 1) * PAGE_SIZE + 1}–
-                    {Math.min(page * PAGE_SIZE, results.total)}
-                  </strong>{' '}
-                  of <strong>{results.total}</strong> software profiles
+                {/* Results summary + sort control */}
+                <div className="results-header">
+                  <p className="results-summary">
+                    Showing{' '}
+                    <strong>
+                      {(page - 1) * PAGE_SIZE + 1}–
+                      {Math.min(page * PAGE_SIZE, results.total)}
+                    </strong>{' '}
+                    of <strong>{results.total}</strong> software profiles
+                  </p>
+
+                  <div className="results-sort">
+                    <label className="results-sort__label" htmlFor="sort-select">
+                      Sort by
+                    </label>
+                    <select
+                      id="sort-select"
+                      className="results-sort__select"
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                    >
+                      {SORT_OPTIONS.map(({ value, label }) => (
+                        <option key={value} value={value}>{label}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 <div className="software-grid">
-                  {results.items.map((item) => (
+                  {displayItems.map((item) => (
                     <SoftwareCard key={item.id} item={item} />
                   ))}
                 </div>
