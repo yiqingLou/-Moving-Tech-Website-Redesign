@@ -1,9 +1,3 @@
-/**
- * api/client.js
- * All communication with the Python/FastAPI backend.
- * Base URL is set via REACT_APP_API_URL env var (default: localhost:8000).
- */
-
 const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 async function request(path) {
@@ -15,27 +9,15 @@ async function request(path) {
   return res.json();
 }
 
-/**
- * Full-text search across company name, description, and keywords.
- * Maps to GET /api/software/search
- */
-export async function searchSoftware(q, page = 1, pageSize = 20) {
-  const params = new URLSearchParams({ q, page, pageSize, sort_by: 'verified_first' });
+export async function searchSoftware(q, page = 1, pageSize = 20, sortBy = 'verified_first') {
+  const params = new URLSearchParams({ q, page, pageSize, sort_by: sortBy });
   return request(`/api/software/search?${params}`);
 }
 
-/**
- * Structured filter query.
- * Maps to GET /api/software/filter
- * @param {Object} filters - Keys match backend query params.
- *   Array values are appended as repeated params (?key=a&key=b)
- *   so FastAPI can receive them as List[str].
- */
-export async function filterSoftware(filters = {}, page = 1, pageSize = 20) {
-  const params = new URLSearchParams({ page, pageSize, sort_by: 'verified_first' });
+export async function filterSoftware(filters = {}, page = 1, pageSize = 20, sortBy = 'verified_first') {
+  const params = new URLSearchParams({ page, pageSize, sort_by: sortBy });
   Object.entries(filters).forEach(([key, val]) => {
     if (Array.isArray(val)) {
-      // Repeated params: ?typology=Full+TMS&typology=CRM
       val.forEach((v) => params.append(key, v));
     } else if (val !== null && val !== undefined && val !== '') {
       params.append(key, val);
@@ -44,22 +26,10 @@ export async function filterSoftware(filters = {}, page = 1, pageSize = 20) {
   return request(`/api/software/filter?${params}`);
 }
 
-/**
- * Fetch all distinct enum values for filter dropdowns.
- * Maps to GET /api/software/options
- * Returns: { typology[], best_for[], install[], language[], status[] }
- */
 export async function getFilterOptions() {
   return request('/api/software/options');
 }
 
-/**
- * Fetch a single software item by its row index id.
- * The backend has no dedicated /:id endpoint, so we use the filter
- * endpoint and match client-side. The detail page may also receive
- * the full item via React Router location.state for zero extra requests.
- * @param {string} id - The row index string from the Excel dataset
- */
 export async function getSoftwareById(id) {
-  return request(`/api/software/${id}`);  // hits GET /api/software/smartmoving
+  return request(`/api/software/${id}`);
 }
