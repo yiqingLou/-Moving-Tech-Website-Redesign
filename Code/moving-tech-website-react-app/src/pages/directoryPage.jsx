@@ -29,35 +29,6 @@ const SORT_OPTIONS = [
   { value: 'name_desc',        label: 'Name Z → A' },
 ];
 
-// ── Client-side sort ────────────────────────────────────────────────────────
-
-function sortItems(items, sortBy) {
-  if (!items) return items;
-  const sorted = [...items];
-  switch (sortBy) {
-    case 'verified_first':
-      return sorted.sort((a, b) => {
-        const av = (a.status || '').toLowerCase() === 'verified' ? 0 : 1;
-        const bv = (b.status || '').toLowerCase() === 'verified' ? 0 : 1;
-        return av - bv || (a.name || '').localeCompare(b.name || '');
-      });
-    case 'unverified_first':
-      return sorted.sort((a, b) => {
-        const av = (a.status || '').toLowerCase() === 'verified' ? 1 : 0;
-        const bv = (b.status || '').toLowerCase() === 'verified' ? 1 : 0;
-        return av - bv || (a.name || '').localeCompare(b.name || '');
-      });
-    case 'name_asc':
-      return sorted.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-    case 'name_desc':
-      return sorted.sort((a, b) => (b.name || '').localeCompare(a.name || ''));
-    default:
-      return sorted;
-  }
-}
-
-// ───────────────────────────────────────────────────────────────────────────
-
 export default function DirectoryPage() {
   const [search, setSearch]   = useState('');
   const [filters, setFilters] = useState(INITIAL_FILTERS);
@@ -70,21 +41,19 @@ export default function DirectoryPage() {
 
   const debouncedSearch = useDebounce(search, 350);
 
-  // Load filter dropdown options once on mount
   useEffect(() => {
     getFilterOptions()
       .then(setOptions)
       .catch(() => {});
   }, []);
 
-  // Fetch results whenever search query, filters, or page changes
   const fetchResults = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       let data;
       if (debouncedSearch.trim()) {
-        data = await searchSoftware(debouncedSearch.trim(), page, PAGE_SIZE);
+        data = await searchSoftware(debouncedSearch.trim(), page, PAGE_SIZE, sortBy);
       } else {
         const activeFilters = {};
         Object.entries(filters).forEach(([k, v]) => {
@@ -94,7 +63,7 @@ export default function DirectoryPage() {
             activeFilters[k] = v;
           }
         });
-        data = await filterSoftware(activeFilters, page, PAGE_SIZE);
+        data = await filterSoftware(activeFilters, page, PAGE_SIZE, sortBy);
       }
       setResults(data);
     } catch (err) {
@@ -102,12 +71,11 @@ export default function DirectoryPage() {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, filters, page]);
+  }, [debouncedSearch, filters, page, sortBy]);
 
   useEffect(() => { fetchResults(); }, [fetchResults]);
 
-  // Reset to page 1 on query / filter change
-  useEffect(() => { setPage(1); }, [debouncedSearch, filters]);
+  useEffect(() => { setPage(1); }, [debouncedSearch, filters, sortBy]);
 
   const handleFilterChange = (newFilters) => { setFilters(newFilters); setPage(1); };
   const handleReset = () => { setFilters(INITIAL_FILTERS); setSearch(''); setPage(1); };
@@ -119,12 +87,8 @@ export default function DirectoryPage() {
       return v !== null && v !== undefined && v !== '';
     });
 
-  // Apply client-side sort to the current page of results
-  const displayItems = results ? sortItems(results.items, sortBy) : [];
-
   return (
     <div className="directory">
-      {/* Top bar */}
       <div className="directory__topbar">
         <div className="directory__topbar-inner">
           <div>
@@ -143,7 +107,6 @@ export default function DirectoryPage() {
         </div>
       </div>
 
-      {/* Search bar */}
       <div className="directory__search-bar">
         <div className="directory__search-inner">
           <div className="search-field">
@@ -163,10 +126,8 @@ export default function DirectoryPage() {
         </div>
       </div>
 
-      {/* Main layout */}
       <div className="directory__body">
         <div className="directory__body-inner">
-          {/* Sidebar filters */}
           <FilterPanel
             options={options}
             filters={filters}
@@ -174,7 +135,6 @@ export default function DirectoryPage() {
             onReset={handleReset}
           />
 
-          {/* Results */}
           <div className="directory__results">
             {loading && <LoadingSpinner message="Fetching software profiles…" />}
 
@@ -195,7 +155,6 @@ export default function DirectoryPage() {
 
             {!loading && !error && results && results.items.length > 0 && (
               <>
-                {/* Results summary + sort control */}
                 <div className="results-header">
                   <p className="results-summary">
                     Showing{' '}
@@ -214,7 +173,7 @@ export default function DirectoryPage() {
                       id="sort-select"
                       className="results-sort__select"
                       value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value)}
+                      onChange={(e) => { setSortBy(e.target.value); setPage(1); }}
                     >
                       {SORT_OPTIONS.map(({ value, label }) => (
                         <option key={value} value={value}>{label}</option>
@@ -224,7 +183,7 @@ export default function DirectoryPage() {
                 </div>
 
                 <div className="software-grid">
-                  {displayItems.map((item) => (
+                  {results.items.map((item) => (
                     <SoftwareCard key={item.id} item={item} />
                   ))}
                 </div>
