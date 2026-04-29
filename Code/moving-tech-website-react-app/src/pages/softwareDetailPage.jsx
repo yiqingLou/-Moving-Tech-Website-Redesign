@@ -393,25 +393,7 @@ export default function SoftwareDetailPage() {
           </section>
         )}
 
-        {/* ── Keywords ── */}
-        {keywordList.length > 0 && (
-          <section className="detail-section">
-            <h2 className="detail-section__title">Keywords</h2>
-            <div className="detail-keywords">
-              {keywordList.map((kw) => (
-                <FeatureBadge key={kw} label={kw} size="md" />
-              ))}
-            </div>
-          </section>
-        )}
 
-        {/* ── Notes ── */}
-        {item.notes && (
-          <section className="detail-section">
-            <h2 className="detail-section__title">Notes</h2>
-            <div className="detail-notes">{item.notes}</div>
-          </section>
-        )}
       </div>
 
       {/* Responsive grid style injected */}
