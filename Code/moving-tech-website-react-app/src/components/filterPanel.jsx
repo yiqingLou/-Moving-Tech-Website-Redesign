@@ -282,18 +282,6 @@ export default function FilterPanel({ options, filters, onChange, onReset }) {
         />
       </div>
 
-      {/* Status */}
-      <div className="filter-group">
-        <label className="filter-group__label">Status</label>
-        <MultiSelect
-          options={formatOptions(options?.status ?? [])}
-          selected={filters.status ?? []}
-          onChange={(vals) => handleChange('status', vals)}
-          placeholder="All statuses"
-          searchable={false}
-        />
-      </div>
-
       {/* Feature toggles — binary on/off */}
       <div className="filter-group">
         <label className="filter-group__label">Features</label>
