@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import FeatureBadge from './featureBadge';
+import { toTitleCase, normalizeLanguage } from './filterPanel';
 import '../styles/components.css';
 
 const FEATURE_LABELS = {
@@ -38,12 +39,12 @@ export default function SoftwareCard({ item }) {
         <div className="software-card__title-group">
           <h3 className="software-card__name">{item.name || 'Unnamed'}</h3>
           {item.typology && (
-            <span className="software-card__typology">{item.typology}</span>
+            <span className="software-card__typology">{toTitleCase(item.typology)}</span>
           )}
         </div>
         {item.status && (
           <span className={`software-card__status software-card__status--${item.status.toLowerCase()}`}>
-            {item.status}
+            {toTitleCase(item.status)}
           </span>
         )}
       </div>
@@ -56,19 +57,21 @@ export default function SoftwareCard({ item }) {
         {item.best_for && (
           <div className="software-card__meta-item">
             <span className="software-card__meta-label">Best For</span>
-            <span className="software-card__meta-value">{item.best_for}</span>
+            <span className="software-card__meta-value">
+              {item.best_for.split(',').map((v) => toTitleCase(v.trim())).join(', ')}
+            </span>
           </div>
         )}
         {item.install && (
           <div className="software-card__meta-item">
             <span className="software-card__meta-label">Deployment</span>
-            <span className="software-card__meta-value">{item.install}</span>
+            <span className="software-card__meta-value">{toTitleCase(item.install)}</span>
           </div>
         )}
         {item.language && (
           <div className="software-card__meta-item">
             <span className="software-card__meta-label">Language</span>
-            <span className="software-card__meta-value">{item.language}</span>
+            <span className="software-card__meta-value">{normalizeLanguage(item.language)}</span>
           </div>
         )}
       </div>

@@ -3,6 +3,7 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import FeatureBadge from "../components/featureBadge";
 import { LoadingSpinner, ErrorMessage } from "../components/statusComponents";
 import { getSoftwareById } from '../api/client';
+import { toTitleCase, normalizeLanguage } from '../components/filterPanel';
 import '../styles/global.css';
 
 const FEATURE_SECTIONS = [
@@ -88,10 +89,10 @@ export default function SoftwareDetailPage() {
         <div className="detail-header__inner">
           <div className="detail-header__content">
             <div className="detail-header__meta">
-              {item.typology && <span className="detail-typology">{item.typology}</span>}
+              {item.typology && <span className="detail-typology">{toTitleCase(item.typology)}</span>}
               {item.status && (
                 <span className={`detail-status detail-status--${item.status.toLowerCase()}`}>
-                  {item.status}
+                  {toTitleCase(item.status)}
                 </span>
               )}
             </div>
@@ -120,9 +121,14 @@ export default function SoftwareDetailPage() {
           <h2 className="detail-section__title">Overview</h2>
           <div className="detail-overview-grid">
             {[
-              { label: 'Best For', value: item.best_for },
-              { label: 'Deployment', value: item.install },
-              { label: 'Language', value: item.language },
+              {
+                label: 'Best For',
+                value: item.best_for
+                  ? item.best_for.split(',').map((v) => toTitleCase(v.trim())).join(', ')
+                  : null,
+              },
+              { label: 'Deployment', value: toTitleCase(item.install) },
+              { label: 'Language', value: item.language ? normalizeLanguage(item.language) : null },
             ]
               .filter(({ value }) => value)
               .map(({ label, value }) => (

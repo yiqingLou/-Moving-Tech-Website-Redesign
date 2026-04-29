@@ -1,14 +1,44 @@
 import React, { useState, useRef, useEffect } from 'react';
 import '../styles/components.css';
 
-// Broad list of spoken languages relevant to moving software markets.
-// DB options are merged in at runtime so nothing is ever missing.
-const COMMON_LANGUAGES = [
-  'English', 'Spanish', 'French', 'German', 'Portuguese', 'Italian',
-  'Dutch', 'Polish', 'Russian', 'Arabic', 'Chinese', 'Japanese',
-  'Korean', 'Swedish', 'Norwegian', 'Danish', 'Finnish', 'Turkish',
-  'Hebrew', 'Greek', 'Czech', 'Romanian', 'Hungarian', 'Ukrainian',
-];
+// Only show these four language options in the filter
+const ALLOWED_LANGUAGES = ['English', 'Spanish', 'French', 'Multilanguage'];
+
+/**
+ * Converts a snake_case or underscore-separated string to Title Case.
+ * e.g. "domestic_local" → "Domestic Local"
+ */
+export function toTitleCase(str) {
+  if (!str) return str;
+  return str
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
+/**
+ * Maps a raw language value from the DB to one of our four display values.
+ * Anything not English/Spanish/French becomes "Multilanguage".
+ */
+export function normalizeLanguage(lang) {
+  if (!lang) return null;
+  const trimmed = lang.trim();
+  if (['English', 'Spanish', 'French'].includes(trimmed)) return trimmed;
+  return 'Multilanguage';
+}
+
+/**
+ * Splits a potentially comma-separated multi-value string into individual
+ * title-cased entries. e.g. "domestic_local, relocation_management"
+ * → ["Domestic Local", "Relocation Management"]
+ */
+function splitAndFormat(value) {
+  if (!value) return [];
+  return value
+    .split(',')
+    .map((v) => toTitleCase(v.trim()))
+    .filter(Boolean);
+}
 
 const FEATURE_KEYS = [
   { key: 'lead_mgmt', label: 'Lead Management' },
@@ -178,9 +208,19 @@ export default function FilterPanel({ options, filters, onChange, onReset }) {
       return v !== null && v !== undefined && v !== '';
     });
 
-  // Build the language options list: merge common list with DB options, dedupe, sort
-  const languageOptions = Array.from(
-    new Set([...COMMON_LANGUAGES, ...(options?.language ?? [])])
+  // Language: fixed list of four options only
+  const languageOptions = ALLOWED_LANGUAGES;
+
+  // Format a raw options array: title-case each entry
+  const formatOptions = (arr = []) =>
+    Array.from(new Set(arr.map(toTitleCase))).sort((a, b) => a.localeCompare(b));
+
+  // Best For: split multi-value entries (e.g. "domestic_local, relocation_management")
+  // into individual options so filters are always single values
+  const bestForOptions = Array.from(
+    new Set(
+      (options?.best_for ?? []).flatMap((v) => splitAndFormat(v))
+    )
   ).sort((a, b) => a.localeCompare(b));
 
   return (
@@ -198,7 +238,7 @@ export default function FilterPanel({ options, filters, onChange, onReset }) {
       <div className="filter-group">
         <label className="filter-group__label">Software Type</label>
         <MultiSelect
-          options={options?.typology ?? []}
+          options={formatOptions(options?.typology ?? [])}
           selected={filters.typology ?? []}
           onChange={(vals) => handleChange('typology', vals)}
           placeholder="All types"
@@ -210,7 +250,7 @@ export default function FilterPanel({ options, filters, onChange, onReset }) {
       <div className="filter-group">
         <label className="filter-group__label">Best For</label>
         <MultiSelect
-          options={options?.best_for ?? []}
+          options={bestForOptions}
           selected={filters.best_for ?? []}
           onChange={(vals) => handleChange('best_for', vals)}
           placeholder="All markets"
@@ -222,7 +262,7 @@ export default function FilterPanel({ options, filters, onChange, onReset }) {
       <div className="filter-group">
         <label className="filter-group__label">Deployment</label>
         <MultiSelect
-          options={options?.install ?? []}
+          options={formatOptions(options?.install ?? [])}
           selected={filters.install ?? []}
           onChange={(vals) => handleChange('install', vals)}
           placeholder="All types"
@@ -230,7 +270,7 @@ export default function FilterPanel({ options, filters, onChange, onReset }) {
         />
       </div>
 
-      {/* Language — searchable, with DB-availability dots */}
+      {/* Language — fixed four options */}
       <div className="filter-group">
         <label className="filter-group__label">Language</label>
         <MultiSelect
@@ -238,8 +278,7 @@ export default function FilterPanel({ options, filters, onChange, onReset }) {
           selected={filters.language ?? []}
           onChange={(vals) => handleChange('language', vals)}
           placeholder="All languages"
-          searchable={true}
-          dotOptions={options?.language ?? []}
+          searchable={false}
         />
       </div>
 
@@ -247,7 +286,7 @@ export default function FilterPanel({ options, filters, onChange, onReset }) {
       <div className="filter-group">
         <label className="filter-group__label">Status</label>
         <MultiSelect
-          options={options?.status ?? []}
+          options={formatOptions(options?.status ?? [])}
           selected={filters.status ?? []}
           onChange={(vals) => handleChange('status', vals)}
           placeholder="All statuses"
