@@ -6,19 +6,19 @@ const PREVIEW_ITEMS = [
   {
     name: 'SmartMoving',
     typology: 'Moving ERP / CRM',
-    description: 'Full-suite platform covering lead management, quoting, dispatch, and accounting for residential movers.',
+    description: 'A Full suite platform that covers lead management, quoting, dispatch, and accounting for residential movers.',
     features: ['Lead Mgmt', 'Quoting', 'Dispatch', 'AR'],
   },
   {
     name: 'MoveBoard',
     typology: 'Field Service Mgmt',
-    description: 'Real-time operations board with crew dispatch, GPS tracking, and mobile crew app for local moving companies.',
+    description: 'Real time operations board that has crew dispatch, GPS tracking, and mobile crew app for local moving companies.',
     features: ['Dispatch', 'Crew App', 'Move Mgmt'],
   },
   {
     name: 'ReloPoint',
     typology: 'Relocation Management',
-    description: 'Corporate relocation management platform handling assignee moves, policy management, and expense reporting.',
+    description: 'Corporate relocation management platform for handling assignee moves, policy management, and expense reporting.',
     features: ['Move Mgmt', 'Shipments', 'HR'],
   },
 ];
@@ -50,8 +50,8 @@ export default function LandingPage() {
             </h1>
 
             <p className="hero__lead">
-              A neutral, structured directory of 150+ software tools built for
-              moving and relocation companies - from CRMs and dispatch systems to
+              A neutral, structured directory of over 150+ software tools built for
+              moving and relocation companies, from CRMs and dispatch systems to
               international relocation platforms.
             </p>
 
